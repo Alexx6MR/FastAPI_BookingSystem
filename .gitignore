@@ -1,0 +1,80 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+*.whl
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environments
+.env
+.venv
+ENV/
+env/
+venv/
+venv.bak/
+# Si usas virtualenvwrapper
+env.bak/
+ENV.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Database files
+*.db
+*.sqlite3
+database.db  # Nombre específico de tu base de datos SQLite
+
+# IDEs y editores
+.vscode/
+.idea/
+
+# FastAPI
+__pycache__/
+
+# Pytest cache y coverage reports
+.pytest_cache/
+.coverage
+.tox/
+htmlcov/
+
+# Módulos creados por Cython
+*.c
+*.cpp
+
+# Archivos de configuración y datos sensibles
+*.env
+*.env.*
+
+# Archivos de logs y temporales
+*.log
+*.tmp
+
+# Archivos de configuración de Docker
+docker-compose.override.yml
+
+# Archivos de lock de Poetry y Pipenv
+poetry.lock
+Pipfile.lock
