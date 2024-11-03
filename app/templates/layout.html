@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Título de la Aplicación{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-200">
+
+    <div class="w-[85rem] m-auto py-10 bg-white"> 
+        <header class="w-full m-auto py-10 ">
+            {% include "navbar.html" %}        
+        </header>
+        
+          
+        <main class="w-full m-auto py-10 flex-1">
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="w-full py-10">
+            {% include "footer.html" %}    
+        </footer>
+    </div>
+   
+</body>
+</html>
