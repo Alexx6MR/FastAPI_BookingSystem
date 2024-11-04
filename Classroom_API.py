@@ -39,13 +39,26 @@ classrooms = [
 
 bookings = []
 
-# Helper Functions
-
-def is_classroom_available(classroom_id: int, start_time: datetime, end_time: datetime) -> bool: # Function to check if a classroom is available for a given time slot
-    for booking in bookings: # Loop through the list of bookings to check for conflicts
-        if booking.classroom_id == classroom_id and not (end_time <= booking.start_time or start_time >= booking.end_time): # Check if the classroom ID matches and there is a time conflict
-            return False
+def is_classroom_available(classroom_id: int, start_time: str, end_time: str) -> bool:
+    start = datetime.strptime(start_time, '%Y/%m/%d-%H:%M')
+    end = datetime.strptime(end_time, '%Y/%m/%d-%H:%M')
+    for booking in bookings:
+        if booking.classroom_id == classroom_id:
+            existing_start = datetime.strptime(booking.start_time, '%Y/%m/%d-%H:%M')
+            existing_end = datetime.strptime(booking.end_time, '%Y/%m/%d-%H:%M')
+            if (start < existing_end and end > existing_start):
+                return False
     return True
+
+def validate_booking_times(start_time: str, end_time: str):
+    start = datetime.strptime(start_time, '%Y/%m/%d-%H:%M')
+    end = datetime.strptime(end_time, '%Y/%m/%d-%H:%M')
+    if start.hour < 7 or end.hour > 18 or (end.hour == 18 and end.minute > 0): # Check if the booking is outside the allowed time range
+        raise HTTPException(status_code=422, detail="Bookings can only be made between the hours 07:00 and 18:00.")
+    if start.minute != 0 or end.minute != 0: # Check if the booking times are not on the hour
+        raise HTTPException(status_code=422, detail="Bookings can only be made for whole hours.")
+    if start >= end: # Check if the start time is not before the end time
+        raise HTTPException(status_code=422, detail="Start time must be before end time.")
 
 # Endpoints
 
@@ -57,6 +70,7 @@ def list_classrooms():
 # Create a new booking for a classroom
 @app.post("/bookings", response_model=Booking)
 def book_classroom(booking: Booking): # The booking object is passed in the request body as JSON
+    validate_booking_times(booking.start_time, booking.end_time) # Validate the booking times
     if not is_classroom_available(booking.classroom_id, booking.start_time, booking.end_time): # Check if the classroom is available for the given time slot before creating the booking
         raise HTTPException(status_code=422, detail="Classroom is not available for the given time slot.") # Return a 422 Unprocessable Entity status code if the classroom is not available
     booking.id = len(bookings) + 1 # Assign a unique ID to the booking (increment the length of the bookings list)
@@ -66,6 +80,7 @@ def book_classroom(booking: Booking): # The booking object is passed in the requ
 # Update a booking for a classroom
 @app.put("/bookings/{booking_id}", response_model=Booking)
 def change_booking(booking_id: int, updated_booking: Booking): # The updated booking object is passed in the request body as JSON and the booking_id is passed as a path parameter in the URL
+    validate_booking_times(updated_booking.start_time, updated_booking.end_time) # Validate the booking times
     for index, booking in enumerate(bookings): # Loop through the list of bookings to find the booking with the specified ID
         if booking.id == booking_id: # Check if the ID of the current booking matches the specified booking ID
             if not is_classroom_available(updated_booking.classroom_id, updated_booking.start_time, updated_booking.end_time): # Check if the classroom is available for the given time slot before updating the booking
