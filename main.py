@@ -1,10 +1,15 @@
+import logging
 from fastapi import FastAPI, HTTPException  # Import FastAPI and HTTPException for API creation and error handling
+from loggning import setupLogging
 from pydantic import BaseModel, field_validator  # Import BaseModel for data modeling and field_validator for validation
-from typing import List  # Import List for type annotations
 from datetime import datetime  # Import datetime for date and time handling
 
-app = FastAPI()  # Initialize FastAPI instance
+# Configure the logger
+setupLogging()
 
+app = FastAPI()  # Initialize FastAPI instance
+    
+    
 # Data models
 class Classroom(BaseModel):
     id: int  # Unique identifier for the classroom
@@ -83,19 +88,21 @@ def validate_booking_times(start_time: str, end_time: str):
 @app.get("/classrooms")
 def list_classrooms():
     # Returns all classrooms
+    logging.info(f'Classrooms retrieved successfully {len(classrooms)}')
     return ResponseModel(
         status="success",
         message="Classrooms retrieved successfully",
-        data={"classrooms": [classroom.dict() for classroom in classrooms]}
+        data={"classrooms": [classroom.model_dump() for classroom in classrooms]}
     )
 
 @app.get("/bookings")
 def list_bookings():
     # Returns all bookings
+    logging.info(f'Bookings retrieved successfully {len(bookings)}')
     return ResponseModel(
         status="success",
         message="Bookings retrieved successfully",
-        data={"bookings": [booking.dict() for booking in bookings]}
+        data={"bookings": [booking.model_dump() for booking in bookings]}
     )
 
 @app.post("/bookings")
@@ -103,16 +110,17 @@ def book_classroom(booking: Booking):
     # Validate booking times and check classroom availability
     validate_booking_times(booking.start_time, booking.end_time)
     if not is_classroom_available(booking.classroom_id, booking.start_time, booking.end_time):
+        logging.error(f"Classroom is not available for the given time slot.")
         raise HTTPException(status_code=422, detail="Classroom is not available for the given time slot.")
     
     # Assign unique ID and add booking to storage
     booking.id = len(bookings) + 1
     bookings.append(booking)
-    
+    logging.info(f'Your booking has been confirmed!: {booking.model_dump()}')
     return ResponseModel(
         status="success",
         message="Your booking has been confirmed!",
-        data={"booking": booking.dict()}
+        data={"booking": booking.model_dump()}
     )
 
 @app.put("/bookings/{booking_id}")
@@ -124,15 +132,17 @@ def change_booking(booking_id: int, updated_booking: Booking):
         if booking.id == booking_id:
             # Check classroom availability for updated times, excluding the current booking
             if not is_classroom_available(updated_booking.classroom_id, updated_booking.start_time, updated_booking.end_time, exclude_booking_id=booking_id):
+                logging.error(f"Classroom is not available for the given time slot.")
                 raise HTTPException(status_code=422, detail="Classroom is not available for the given time slot.")
             
             # Update booking and keep the original ID
             updated_booking.id = booking_id
             bookings[index] = updated_booking
+            logging.info(f'Your booking has been updated.: {updated_booking.model_dump()}')
             return ResponseModel(
                 status="success",
                 message="Your booking has been updated.",
-                data={"booking": updated_booking.dict()}
+                data={"booking": updated_booking.model_dump()}
             )
     
     # Booking not found
@@ -144,39 +154,45 @@ def cancel_booking(booking_id: int):
     for index, booking in enumerate(bookings):
         if booking.id == booking_id:
             canceled_booking = bookings.pop(index)
+            logging.info(f'Your booking has been canceled: {canceled_booking.model_dump()}')
             return ResponseModel(
                 status="success",
                 message="Your booking has been canceled.",
-                data={"booking": canceled_booking.dict()}
+                data={"booking": canceled_booking.model_dump()}
             )
     
     # Booking not found
+    logging.error(f"Booking not found.")
     raise HTTPException(status_code=404, detail="Booking not found.")
+   
 
 @app.post("/reviews")
 def add_review(review: Review):
     # Add a new review to the review list
     reviews.append(review)
+    logging.info(f'Your review has been submitted: {review.model_dump()}')
     return ResponseModel(
         status="success",
         message="Your review has been submitted!",
-        data={"review": review.dict()}
+        data={"review": review.model_dump()}
     )
 
 @app.get("/reviews")
 def list_reviews(classroom_id: int = None):
     # Retrieve reviews; filter by classroom_id if provided
     if classroom_id:
-        filtered_reviews = [review.dict() for review in reviews if review.classroom_id == classroom_id]
+        filtered_reviews = [review.model_dump() for review in reviews if review.classroom_id == classroom_id]
+        logging.info(f'Reviews retrieved successfully: {filtered_reviews.model_dump()}')
         return ResponseModel(
             status="success",
             message="Reviews retrieved successfully",
-            data={"reviews": filtered_reviews}
+            data={"reviews": filtered_reviews.model_dump()}
         )
     
     # Return all reviews if no filter applied
+    logging.info(f'Reviews retrieved successfully: {[review.model_dump() for review in reviews]}')
     return ResponseModel(
         status="success",
         message="All reviews retrieved successfully",
-        data={"reviews": [review.dict() for review in reviews]}
+        data={"reviews": [review.model_dump() for review in reviews]}
     )
