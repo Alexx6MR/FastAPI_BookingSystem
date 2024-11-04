@@ -3,6 +3,7 @@ from pydantic import BaseModel, field_validator
 from typing import List
 from datetime import datetime
 
+# Initialize FastAPI app
 app = FastAPI()
 
 # Data Models
@@ -17,6 +18,7 @@ class Booking(BaseModel):
     start_time: str
     end_time: str
 
+    # Validator to ensure datetime format is correct
     @field_validator('start_time', 'end_time')
     def validate_datetime_format(cls, v):
         try:
