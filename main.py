@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI, HTTPException  # Import FastAPI and HTTPException for API creation and error handling
 from loggning import setupLogging
-from pydantic import BaseModel, field_validator  # Import BaseModel for data modeling and field_validator for validation
+from pydantic import BaseModel, field_validator, Field   # Import BaseModel for data modeling and field_validator for validation
 from datetime import datetime  # Import datetime for date and time handling
 
 # Configure the logger
@@ -34,7 +34,7 @@ class Booking(BaseModel):
 class Review(BaseModel):
     classroom_id: int
     student_name: str
-    rating: int
+    rating: int = Field(..., ge=1, le=10, alias="rating (1-10)" ,description="Rating must be between 1-10")  # Begränsar rating mellan 1 och 10
     comment: str
 
 class ResponseModel(BaseModel):  # Standard response model for consistent API responses
