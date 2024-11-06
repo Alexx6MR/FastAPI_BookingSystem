@@ -198,22 +198,3 @@ def list_reviews(classroom_id: int = None):
     )
 
 
-# @app.get("/reviews")
-# def list_reviews(classroom_id: int = None):
-#     # Retrieve reviews; filter by classroom_id if provided
-#     if classroom_id:
-#         filtered_reviews = [review.model_dump() for review in reviews if review.classroom_id == classroom_id]
-#         logging.info(f'Reviews retrieved successfully: {filtered_reviews.model_dump()}')
-#         return ResponseModel(
-#             status="success",
-#             message="Reviews retrieved successfully",
-#             data={"reviews": filtered_reviews.model_dump()}
-#         )
-    
-#     # Return all reviews if no filter applied
-#     logging.info(f'Reviews retrieved successfully: {[review.model_dump() for review in reviews]}')
-#     return ResponseModel(
-#         status="success",
-#         message="All reviews retrieved successfully",
-#         data={"reviews": [review.model_dump() for review in reviews]}
-#     )
